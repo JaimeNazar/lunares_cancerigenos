@@ -7,51 +7,43 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 
-data_dir = 'train'
+data_dir = 'data'
+data_entrenar_dir = 'data/entrenar'
+data_prueba_dir = 'data/prueba'
 
-image_count = len(list('train/*/*.jpg'))
-print(image_count)
+# Para entrenar el modelo vamos a usar una porcion de las imagenes
+cant_img = len(list('data/*/*/*.jpg'))
+print(cant_img)
 
 # -- Model --
+# Parametros de las imagenes utilizadas para entrenar
+tam_batch = 32
+alto_img = 224
+ancho_img = 224
 
-batch_size = 32
-img_height = 224
-img_width = 224
-
-# Use 80% of the images for training and 20% for validation.
-train_ds = tf.keras.utils.image_dataset_from_directory(
-  data_dir,
-  validation_split=0.2,
-  subset="training",
+# Clases de imagenes, en nuestro caso son normales o cancerigenos
+entrenar_ds = tf.keras.utils.image_dataset_from_directory(
+  data_entrenar_dir,
   seed=123,
-  image_size=(img_height, img_width),
-  batch_size=batch_size)
+  image_size=(alto_img, ancho_img),
+  batch_size=tam_batch)
 
-val_ds = tf.keras.utils.image_dataset_from_directory(
-  data_dir,
-  validation_split=0.2,
-  subset="validation",
-  seed=123,
-  image_size=(img_height, img_width),
-  batch_size=batch_size)
-
-# Classes of images 
-class_names = train_ds.class_names
+# Clases de imagenes en el dataset, creadas por la libreria en funcion de las carpetas de imagenes 
+class_names = entrenar_ds.class_names
 print(class_names)
 
 # -- Training --
 
-# Buffering to avoid blocking the I/O
+# Buffering de las imagenes para no bloquear el disco
 AUTOTUNE = tf.data.AUTOTUNE
 
-train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+entrenar_ds = entrenar_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 
 # Dont use the 255 values per color, use this instead
 normalization_layer = layers.Rescaling(1./255)
-
+# TODO: Cambiar todas las variables a espanol y chequear que funcione bien.
 # Apply layer to dataset
-normalized_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
+normalized_ds = entrenar_ds.map(lambda x, y: (normalization_layer(x), y))
 image_batch, labels_batch = next(iter(normalized_ds))
 first_image = image_batch[0]
 # Notice the pixel values are now in `[0,1]`.
@@ -92,11 +84,11 @@ history = model.fit(
 # -- Display results --
 
 
-# -- Test the model by telling it to identify new data --
-malignant_path = 'test/malignant/1.jpg'
+# -- Test the model by telling it to identify new data --cc
+benign_path = 'test/benign/1.jpg'
 
 img = tf.keras.utils.load_img(
-    malignant_path, target_size=(img_height, img_width)
+    benign_path, target_size=(img_height, img_width)
 )
 img_array = tf.keras.utils.img_to_array(img)
 img_array = tf.expand_dims(img_array, 0) # Create a batch
