@@ -21,16 +21,22 @@ tam_batch = 32
 alto_img = 224
 ancho_img = 224
 
-# Clases de imagenes, en nuestro caso son normales o cancerigenos
+# Directorios de imagenes, uno para entrenar el modelo y otro para validar los resultados
 entrenar_ds = tf.keras.utils.image_dataset_from_directory(
   data_entrenar_dir,
   seed=123,
   image_size=(alto_img, ancho_img),
   batch_size=tam_batch)
 
+val_ds = tf.keras.utils.image_dataset_from_directory(
+  data_prueba_dir,
+  seed=123,
+  image_size=(alto_img, ancho_img),
+  batch_size=tam_batch)
+
 # Clases de imagenes en el dataset, creadas por la libreria en funcion de las carpetas de imagenes 
-class_names = entrenar_ds.class_names
-print(class_names)
+clases = entrenar_ds.class_names
+print(clases)
 
 # -- Training --
 
@@ -50,10 +56,10 @@ first_image = image_batch[0]
 print(np.min(first_image), np.max(first_image))
 
 # -- Create the model --
-num_classes = len(class_names)
+num_clases = len(clases)
 
 model = Sequential([
-  layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
+  layers.Rescaling(1./255, input_shape=(alto_img, ancho_img, 3)),
   layers.Conv2D(16, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
   layers.Conv2D(32, 3, padding='same', activation='relu'),
@@ -62,7 +68,7 @@ model = Sequential([
   layers.MaxPooling2D(),
   layers.Flatten(),
   layers.Dense(128, activation='relu'),
-  layers.Dense(num_classes)
+  layers.Dense(num_clases)
 ])
 
 # -- Compile the model --
@@ -76,7 +82,7 @@ model.summary()
 # -- Train the model --
 epochs=10
 history = model.fit(
-  train_ds,
+  entrenar_ds,
   validation_data=val_ds,
   epochs=epochs
 )
@@ -85,18 +91,18 @@ history = model.fit(
 
 
 # -- Test the model by telling it to identify new data --cc
-benign_path = 'test/benign/1.jpg'
+benign_path = 'data/prueba/normal/1.jpg'
 
 img = tf.keras.utils.load_img(
-    benign_path, target_size=(img_height, img_width)
+    benign_path, target_size=(alto_img, ancho_img)
 )
 img_array = tf.keras.utils.img_to_array(img)
 img_array = tf.expand_dims(img_array, 0) # Create a batch
 
-predictions = model.predict(img_array)
-score = tf.nn.softmax(predictions[0])
+predicciones = model.predict(img_array)
+puntaje = tf.nn.softmax(predicciones[0])
 
 print(
-    "This image most likely belongs to {} with a {:.2f} percent confidence."
-    .format(class_names[np.argmax(score)], 100 * np.max(score))
+    "Esta imagen fue clasificada como lunar {} con {:.2f} porciento de confianza."
+    .format(clases[np.argmax(puntaje)], 100 * np.max(puntaje))
 )
