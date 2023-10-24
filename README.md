@@ -1,11 +1,13 @@
 # Clasificador de lunares cancerigenos
 
 ### Archivos
+- **setupLinux.sh** Es el archivo encargado de chequear que las librerias necesarias esten instaladas e instalandolas si no lo estan para Linux.
+- **setupWindows.ps1** Es el archivo encargado de chequear que las librerias necesarias esten instaladas e instalandolas si no lo estan para Windows.
 - **entrenar.py** Es el archivo encargado de generar y entrenar el modelo para luego converirlo y guardarlo como modelo TensorFlow  Lite.
 - **prediccion.py** Es el archivo encargado de correr el modelo guardado para realizar pruebas.
 
 ### Modo de uso
-Por ahora el programa se corre mediante el uso de uno consola de comandos, se requiere tener instalado Python y las librerias tensorflow y matlpotlib.
+El programa se corre mediante el uso de uno consola de comandos, se requiere tener instalado Python y las librerias tensorflow y matlpotlib(Este ultimo punto se puede hacer corriendo el script setupLinux.sh/setupWindowsps1 dependiendo del sistema operativo.
 #### **Entrenamiento**
 Correr el programa modelo.py mediante el comando ```python modelo.py```, de esa manera se entrenara un modelo secuencial Keras a partir de las imagenes contenidas en el directorio entrenar/. Luego el modelo es guardado como TensorFlow Lite modelo(```model.tflite```).
 ![Alt text](entrenamiento.png?raw=true "Entrenamiento")
